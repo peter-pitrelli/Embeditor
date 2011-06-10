@@ -27,10 +27,7 @@ public class LinuxWindowManager extends WindowManager
     String[] cmd = new String[args.length + 1];
     ByteArrayOutputStream result = new ByteArrayOutputStream();
     cmd[0] = "wmctrl";
-    for (int i = 0; i < args.length; i++)
-    {
-      cmd[i + 1] = args[i];
-    }
+    System.arraycopy(args, 0, cmd, 1, args.length);
 
     Process p;
     p = Runtime.getRuntime().exec(cmd);
@@ -64,9 +61,10 @@ public class LinuxWindowManager extends WindowManager
         {
           "-l", "-p"
         });
-      Matcher matcher = Pattern.compile("(0x\\d+)\\s+\\d+\\s+(\\d+)\\s+[^\\s]+\\s+(.*)\\n").matcher(output);
+      Matcher matcher = Pattern.compile("(0x[^\\s]+)\\s+\\d+\\s+(\\d+)\\s+[^\\s]+\\s+(.*)\\n").matcher(output);
       while (matcher.find())
       {
+          System.out.println("WIndow:" +matcher.group(3));
         if (matcher.group(3).contains(name))
         {
           return new Window(matcher.group(1));
@@ -166,7 +164,7 @@ public class LinuxWindowManager extends WindowManager
         {
           "-l", "-p"
         });
-      Matcher matcher = Pattern.compile("(0x\\d+)\\s+\\d+\\s+(\\d+)\\s+[^\\s]+\\s+(.*)\\n").matcher(output);
+      Matcher matcher = Pattern.compile("(0x[^\\s]+)\\s+\\d+\\s+(\\d+)\\s+[^\\s]+\\s+(.*)\\n").matcher(output);
       while (matcher.find())
       {
         if (matcher.group(2).equals("" + pid))
@@ -182,4 +180,19 @@ public class LinuxWindowManager extends WindowManager
     }
     return null;
   }
+
+    @Override
+    public void sendClose(Window w) {
+      try
+    {
+      this.wmctrl(new String[]
+        {
+          "-i", "-c", w.getId()
+        });
+    }
+    catch (IOException ex)
+    {
+      Logger.getLogger(LinuxWindowManager.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    }
 }

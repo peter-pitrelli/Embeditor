@@ -85,4 +85,6 @@ public abstract class WindowManager
     Toolkit toolkit = Toolkit.getDefaultToolkit();
     return toolkit.getScreenSize();
   }
+  
+  public abstract void sendClose(Window w);
 }
