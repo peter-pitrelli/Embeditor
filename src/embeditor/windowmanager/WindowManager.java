@@ -53,6 +53,8 @@ public abstract class WindowManager
 
   public abstract Window findWindow(String name);
   
+  public abstract boolean isWindow(Window w);
+  
   public abstract Window findByPID(int pid);
 
   public abstract void moveWindow(Window w, int x, int y);
@@ -61,6 +63,8 @@ public abstract class WindowManager
 
   public abstract Rectangle getWindowRect(Window w);
 
+  public abstract void setAbove(Window w, boolean above);
+  
   public void setWindowRect(Window w, Rectangle r)
   {
     moveWindow(w, r.x, r.y);
