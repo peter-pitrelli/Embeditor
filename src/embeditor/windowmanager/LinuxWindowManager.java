@@ -105,8 +105,8 @@ public class LinuxWindowManager extends WindowManager {
             Matcher matcher = Pattern.compile(w.getId() + "\\s+\\d+\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(.*)\\n").matcher(output);
             while (matcher.find()) {
                 // Values workaround works for Gnome3 if you are not near to 0 0
-                return new Rectangle(Integer.parseInt(matcher.group(1)),// - 2,
-                        Integer.parseInt(matcher.group(2)),// - 123 + 75,
+                return new Rectangle(Integer.parseInt(matcher.group(1)) - 2,
+                        Integer.parseInt(matcher.group(2)) - 123 + 75,
                         Integer.parseInt(matcher.group(3)),
                         Integer.parseInt(matcher.group(4)));
             }

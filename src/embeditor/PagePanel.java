@@ -24,15 +24,24 @@ public class PagePanel extends JPanel {
     public JButton bCancel = new JButton("Cancel");
     public List<FileObject> files = new LinkedList<FileObject>();
     private Rectangle currentEditing;
+    private Rectangle creating;
 
     public PagePanel() {
         this.setPreferredSize(new Dimension(1024, 768));
         this.setMinimumSize(new Dimension(1024, 768));
         this.add(bSave);
         this.add(bCancel);
+        bSave.setVisible(false);
+        bCancel.setVisible(false);
         this.setVisible(true);
     }
 
+    public void setCreating(Rectangle r)
+    {
+        this.creating = r;
+        this.repaint();
+    }
+    
     public void setCurrentEditing(Rectangle r) {
         this.currentEditing = r;
         System.out.println("Panel r: "+r);
@@ -41,8 +50,8 @@ public class PagePanel extends JPanel {
             bCancel.setVisible(false);
         } else {
             this.setMinimumSize(new Dimension(r.width, r.height+bSave.getHeight()));
-            bSave.setLocation(new Point(r.x + r.width - bSave.getWidth(), r.y + r.height));
-            bCancel.setLocation(new Point(r.x, r.y + r.height));
+            bSave.setLocation(new Point(r.x + r.width - bSave.getWidth(), r.y + r.height + 25));
+            bCancel.setLocation(new Point(r.x, r.y + r.height + 25));
             bSave.setVisible(true);
             bCancel.setVisible(true);
         }
@@ -57,7 +66,12 @@ public class PagePanel extends JPanel {
         }
         if (currentEditing != null) {
             g.setColor(Color.RED);
-            g.drawRect(currentEditing.x, currentEditing.y, currentEditing.width, currentEditing.height);
+            g.drawRect(currentEditing.x-2, currentEditing.y-2, currentEditing.width+4, currentEditing.height+4);
+        }
+        if (creating != null)
+        {
+            g.setColor(Color.GREEN);
+            g.drawRect(creating.x, creating.y, creating.width, creating.height);
         }
     }
 }

@@ -6,6 +6,7 @@ package embeditor;
 
 import embeditor.windowmanager.Window;
 import embeditor.windowmanager.WindowManager;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,25 +14,31 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author thommy
  */
-public class Embeditor implements ActionListener, MouseListener {
+public class Embeditor implements ActionListener, MouseListener, MouseMotionListener {
 
     private WindowManager wm = WindowManager.getInstance();
     private PagePanel pp;
     private FileObject currentEdit;
     private Window editWindow;
+    private List<Program> programs = new LinkedList<Program>();
 
     public void run() throws FileNotFoundException, IOException, InterruptedException {
         JFrame mf = new JFrame("Test");
@@ -41,37 +48,47 @@ public class Embeditor implements ActionListener, MouseListener {
         pp.bSave.addActionListener(this);
         pp.bCancel.addActionListener(this);
         pp.addMouseListener(this);
+        pp.addMouseMotionListener(this);
         mf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mf.setVisible(true);
+
 
         Program oocalc = new Program();
+        oocalc.name = "Lyx";
+        oocalc.command = "lyx";
+        oocalc.fileendig = "lyx";
+        oocalc.preOffset = new Point(40, 188);
+        oocalc.postOffset = new Point(20, 30);
+        oocalc.template = new File("templates/sample.lyx");
+        oocalc.windowstring = "<file>";
+        this.programs.add(oocalc);
+
+        oocalc = new Program();
+        oocalc.name = "Tabellenkalkulation";
         oocalc.command = "oocalc";
         oocalc.fileendig = "ods";
         oocalc.preOffset = new Point(40, 188);
         oocalc.postOffset = new Point(20, 30);
-        oocalc.template = new File("/tmp/sample.ods");
-        oocalc.windowstring = "<file> - OpenOffice";
-        mf.setVisible(true);
-        this.runProgram(oocalc, new Rectangle(100, 100, 400, 300));
+        oocalc.template = new File("templates/sample.ods");
+        oocalc.windowstring = "<file> - ";
+        this.programs.add(oocalc);
     }
 
-    public void editFile(FileObject result) throws InterruptedException, IOException
-    {
+    public void editFile(FileObject result) throws InterruptedException, IOException {
         this.editFile(result, null);
     }
-    
+
     public void editFile(FileObject result, Rectangle r) throws InterruptedException, IOException {
         currentEdit = result;
-        if (r == null)
-        {
+        if (r == null) {
             r = new Rectangle(
                     currentEdit.position.x,
                     currentEdit.position.y,
                     currentEdit.screenshot.getWidth(),
-                    currentEdit.screenshot.getHeight()
-                    );
+                    currentEdit.screenshot.getHeight());
         }
         Point off = pp.getLocationOnScreen();
-        r.setLocation(r.x+off.x, r.y+off.y);
+        r.setLocation(r.x + off.x, r.y + off.y);
         Program p = result.program;
         Runtime.getRuntime().exec(new String[]{
                     p.command, currentEdit.file.getAbsolutePath()
@@ -90,10 +107,10 @@ public class Embeditor implements ActionListener, MouseListener {
                 System.out.println("Thread started");
                 while (editWindow != null && wm.isWindow(editWindow)) {
                     Rectangle r = wm.getWindowRect(editWindow);
-                    System.out.println("Window: "+r);
+                    System.out.println("Window: " + r);
                     if (!r.equals(old)) {
                         Point off = pp.getLocationOnScreen();
-                        System.out.println("offset: "+off);
+                        System.out.println("offset: " + off);
                         pp.setCurrentEditing(
                                 new Rectangle(r.x - off.x, r.y - off.y, r.width, r.height));
                         old = r;
@@ -107,7 +124,7 @@ public class Embeditor implements ActionListener, MouseListener {
                 System.out.println("Thread stopped");
                 pp.setCurrentEditing(null);
             }
-        }.run();
+        }.start();
     }
 
     public void runProgram(Program p, Rectangle r) throws FileNotFoundException, IOException, InterruptedException {
@@ -155,33 +172,68 @@ public class Embeditor implements ActionListener, MouseListener {
         }
     }
 
-    @Override
-    public void mouseClicked(MouseEvent me) {
+    private FileObject findByPoint(Point p) {
         for (FileObject o : this.pp.files) {
             Rectangle r = new Rectangle(o.position.x, o.position.y,
                     o.screenshot.getWidth(), o.screenshot.getHeight());
-            if (r.contains(me.getPoint())) {
-
-                try {
-                    this.pp.files.remove(o);
-                    this.pp.repaint();
-                    this.editFile(o);
-                    break;
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            if (r.contains(p)) {
+                return o;
             }
+        }
+        return null;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent me) {
+        FileObject clicked = findByPoint(me.getPoint());
+        if (clicked != null) {
+            try {
+                this.editFile(clicked);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    private FileObject moving = null;
+    private boolean creating = false;
+    private Point offset = null;
+
+    @Override
+    public void mousePressed(MouseEvent me) {
+        moving = findByPoint(me.getPoint());
+        if (moving != null) {
+            Point p = me.getPoint();
+            offset = new Point(p.x - moving.position.x, p.y - moving.position.y);
+        } else {
+            creating = true;
+            offset = me.getPoint();
+            pp.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
     }
 
     @Override
-    public void mousePressed(MouseEvent me) {
-    }
-
-    @Override
     public void mouseReleased(MouseEvent me) {
+        moving = null;
+        if (creating) {
+            pp.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            Rectangle r = new Rectangle(offset.x, offset.y, me.getPoint().x - offset.x, me.getPoint().y - offset.y);
+            pp.setCreating(null);
+            creating = false;
+            Program p = selectProgramDialog();
+            if (p != null) {
+                try {
+                    this.runProgram(p, r);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Embeditor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 
     @Override
@@ -190,5 +242,31 @@ public class Embeditor implements ActionListener, MouseListener {
 
     @Override
     public void mouseExited(MouseEvent me) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent me) {
+        if (moving != null) {
+            moving.position.move(me.getX() - offset.x, me.getY() - offset.y);
+            pp.repaint();
+        } else if (creating) {
+            Rectangle r = new Rectangle(offset.x, offset.y, me.getPoint().x - offset.x, me.getPoint().y - offset.y);
+            pp.setCreating(r);
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent me) {
+    }
+
+    private Program selectProgramDialog() {
+        JComboBox cb = new JComboBox();
+        for (Program p : programs) {
+            cb.addItem(p);
+        }
+        if (JOptionPane.showConfirmDialog(pp, cb, "Bitte auswählen", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+            return (Program) cb.getSelectedItem();
+        }
+        return null;
     }
 }

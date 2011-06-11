@@ -13,6 +13,7 @@ import java.io.File;
  * @author thommy
  */
 public class Program {
+    protected String name;
     protected String command;
     protected String windowstring;
     protected Point preOffset;
@@ -39,5 +40,11 @@ public class Program {
      return new Rectangle(outerRectangle.x+preOffset.x, outerRectangle.y+preOffset.y,
                 outerRectangle.width-preOffset.x-postOffset.x, outerRectangle.height-preOffset.y-postOffset.y);
       
+    }
+    
+    @Override
+    public String toString()
+    {
+        return name;
     }
 }
