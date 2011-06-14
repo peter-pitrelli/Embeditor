@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.TransferHandler;
 
 /**
  *
@@ -29,10 +30,11 @@ public class PagePanel extends JPanel {
     public PagePanel() {
         this.setPreferredSize(new Dimension(1024, 768));
         this.setMinimumSize(new Dimension(1024, 768));
-        this.add(bSave);
-        this.add(bCancel);
+        
         bSave.setVisible(false);
         bCancel.setVisible(false);
+        this.add(bSave);
+        this.add(bCancel);
         this.setVisible(true);
     }
 
@@ -44,7 +46,6 @@ public class PagePanel extends JPanel {
     
     public void setCurrentEditing(Rectangle r) {
         this.currentEditing = r;
-        System.out.println("Panel r: "+r);
         if (r == null) {
             bSave.setVisible(false);
             bCancel.setVisible(false);
@@ -57,7 +58,7 @@ public class PagePanel extends JPanel {
         }
         this.repaint();
     }
-
+    
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);

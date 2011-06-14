@@ -7,12 +7,13 @@ package embeditor;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.Serializable;
 
 /**
  *
  * @author thommy
  */
-public class Program {
+public class Program implements Serializable{
     protected String name;
     protected String command;
     protected String windowstring;
