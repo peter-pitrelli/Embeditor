@@ -48,13 +48,13 @@ public class PagePanel extends JPanel {
         this.currentEditing = r;
         if (r == null) {
             bSave.setVisible(false);
-            bCancel.setVisible(false);
+            //bCancel.setVisible(false);
         } else {
             this.setMinimumSize(new Dimension(r.width, r.height+bSave.getHeight()));
-            bSave.setLocation(new Point(r.x + r.width - bSave.getWidth(), r.y + r.height + 25));
-            bCancel.setLocation(new Point(r.x, r.y + r.height + 25));
+            bSave.setLocation(new Point(r.x + r.width + 10, r.y));
+            //bCancel.setLocation(new Point(r.x, r.y + r.height + 25));
             bSave.setVisible(true);
-            bCancel.setVisible(true);
+            //bCancel.setVisible(true);
         }
         this.repaint();
     }

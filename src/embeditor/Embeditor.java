@@ -232,8 +232,8 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
         oocalc.name = "Lyx";
         oocalc.command = "lyx";
         oocalc.fileendig = "lyx";
-        oocalc.preOffset = new Point(40, 188);
-        oocalc.postOffset = new Point(20, 30);
+        oocalc.preOffset = new Point(2, 120);
+        oocalc.postOffset = new Point(2, 30);
         oocalc.template = new File("templates/sample.lyx");
         oocalc.windowstring = "<file>";
         this.programs.add(oocalc);
@@ -246,6 +246,16 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
         oocalc.postOffset = new Point(20, 30);
         oocalc.template = new File("templates/sample.ods");
         oocalc.windowstring = "<file> - ";
+        this.programs.add(oocalc);
+        
+        oocalc = new Program();
+        oocalc.name = "GNU Paint";
+        oocalc.command = "gpaint";
+        oocalc.fileendig = "bmp";
+        oocalc.preOffset = new Point(100, 188);
+        oocalc.postOffset = new Point(20, 30);
+        oocalc.template = new File("templates/sample.bmp");
+        oocalc.windowstring = "<file>";
         this.programs.add(oocalc);
     }
 
@@ -308,7 +318,7 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
         currentEdit = new FileObject();
         currentEdit.program = p;
         currentEdit.position = r.getLocation();
-        currentEdit.file = new File(this.currentFolder, "" + this.currentPage + "/data/file" + Math.random() + p.fileendig);
+        currentEdit.file = new File(this.currentFolder, "" + this.currentPage + "/data/file" + Math.random() + "."+ p.fileendig);
         FileInputStream in = new FileInputStream(p.template);
         FileOutputStream out = new FileOutputStream(currentEdit.file);
         while (in.available() > 0) {
@@ -358,7 +368,8 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
 
     private FileObject findByPoint(Point p) {
         //TODO: Iterate backwards to get upper most image
-        for (FileObject o : this.pp.files) {
+        for (int i = this.pp.files.size()-1;i>=0;i--) {
+            FileObject o = this.pp.files.get(i);
             Rectangle r = new Rectangle(o.position.x, o.position.y,
                     o.screenshot.getWidth(), o.screenshot.getHeight());
             if (r.contains(p)) {
