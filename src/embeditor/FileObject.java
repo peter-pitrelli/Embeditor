@@ -22,11 +22,10 @@ import javax.imageio.ImageIO;
  */
 public class FileObject implements Serializable {
 
-    static FileObject readFromFile(File f) throws FileNotFoundException, IOException, ClassNotFoundException {
+    static FileObject readFromFile(File f, File img) throws FileNotFoundException, IOException, ClassNotFoundException {
         Object o = new ObjectInputStream(new FileInputStream(f)).readObject();
         if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
-            File img = new File(f.getAbsolutePath() + ".png");
             if (img.exists()) {
                 fo.screenshot = ImageIO.read(img);
             }
@@ -35,20 +34,18 @@ public class FileObject implements Serializable {
         return null;
     }
 
-    static void writeToFile(FileObject o, File f) throws FileNotFoundException, IOException
-    {
-        writeToFile(o,f,true);
-    }
-    
-    static void writeToFile(FileObject o, File f, boolean saveScreenshot) throws FileNotFoundException, IOException {
+    static void writeToFile(FileObject o, File f, File img) throws FileNotFoundException, IOException {
         BufferedImage tmp = o.screenshot;
         if (o.screenshot != null) {
-            if (saveScreenshot) {
-                ImageIO.write(o.screenshot, "png", new File(f.getAbsolutePath() + ".png"));
+            if (img != null) {
+                ImageIO.write(o.screenshot, "png", img);
             }
             o.screenshot = null;
         }
-        new ObjectOutputStream(new FileOutputStream(f)).writeObject(o);
+        FileOutputStream fos = new FileOutputStream(f);
+        new ObjectOutputStream(fos).writeObject(o);
+        fos.flush();
+        fos.close();
         o.screenshot = tmp;
     }
     protected File file;
