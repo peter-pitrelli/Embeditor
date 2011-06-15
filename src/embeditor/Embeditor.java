@@ -725,9 +725,8 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
   {
   }
 
-  private void addProgramDialog(File file) throws FileNotFoundException, IOException
+  private void ReadFromDesktopFile(File file, Program p) throws FileNotFoundException, IOException
   {
-    Program p = new Program();
     BufferedReader fis = new BufferedReader(new FileReader(file));
     String line = fis.readLine();
     if (line.equals("[Desktop Entry]"))
@@ -756,6 +755,15 @@ public class Embeditor extends TransferHandler implements ActionListener, MouseL
         line = fis.readLine();
       }
     }
-
+  }
+  
+  private void addProgramDialog(File file) throws FileNotFoundException, IOException
+  {
+    Program p = new Program();
+    this.ReadFromDesktopFile(file, p);
+    if (p.name==null){
+      p.name = JOptionPane.showInputDialog(pp, "Wie heisst das Programm?");
+    }
+    
   }
 }
